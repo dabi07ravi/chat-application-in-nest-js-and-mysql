@@ -1,0 +1,42 @@
+trigger:
+- main
+
+pool:
+  name: hoicko
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '19.x'
+  displayName: 'Install Node.js'
+
+- task: YarnInstaller@3
+  inputs:
+    versionSpec: '1.x'
+    checkLatest: true
+  displayName: "install yarn"
+  
+- task: Yarn@3
+  inputs:
+    arguments: 'install'
+  displayName: "installing package"
+
+- task: Yarn@3
+  inputs:
+    arguments: 'build'
+  displayName: 'Build Project' 
+ 
+- task: Docker@2
+  displayName: Build an image
+  inputs:
+        repository: auth
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          latest
+- task: Docker@2
+  inputs:
+    containerRegistry: 'digitalocean'
+    repository: 'hoicko-regitry'
+    command: 'push'
+    tags: 'latest'
